@@ -3,7 +3,7 @@
 #include <ctime>
 #include <cstdlib>
 
-#define MAX_LICZBA_POZIOMOW 3
+#define MAX_LICZBA_POZIOMOW 4
 class Menu
 {
 private:
@@ -46,6 +46,10 @@ Menu::Menu(float width, float height)
 	menu[2].setFillColor(sf::Color::White);
 	menu[2].setString("Wyjscie");
 	menu[2].setPosition(sf::Vector2f(width / 3, height / (MAX_LICZBA_POZIOMOW + 1) * 3));
+	menu[3].setFont(font);
+	menu[3].setFillColor(sf::Color::Cyan);
+	menu[3].setString("Wyniki");
+	menu[3].setPosition(sf::Vector2f(width / 3, height / (MAX_LICZBA_POZIOMOW + 1) * 4));
 }
 void Menu::draw(sf::RenderWindow& window)
 {
@@ -60,9 +64,11 @@ void Menu::przesunG()
 	{
 		menu[selectedItem].setFillColor(sf::Color::White);
 		menu[selectedItem].setStyle(sf::Text::Regular);
-		selectedItem++;
+		selectedItem--;
 		if (selectedItem >= MAX_LICZBA_POZIOMOW)
 			selectedItem = 0;
+		if (selectedItem < 0)
+			selectedItem = 3;
 		menu[selectedItem].setFillColor(sf::Color::Cyan);
 		menu[selectedItem].setStyle(sf::Text::Bold);
 	}
@@ -130,17 +136,17 @@ int main()
 			{
 				if (event.key.code == sf::Keyboard::Up)
 				{
-					myDelay(250);
+					myDelay(150);
 					menu.przesunG();
 				}
 				if (event.key.code == sf::Keyboard::Down)
 				{
-					myDelay(250);
+					myDelay(150);
 					menu.przesunD();
 				}
 				if (event.key.code == sf::Keyboard::Escape)
 				{
-					myDelay(250);
+					myDelay(150);
 					menu_selected_flag = 0;
 				}
 				if (menu_selected_flag == 0)
