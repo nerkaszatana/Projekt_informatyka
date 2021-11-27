@@ -1,4 +1,4 @@
-#include <SFML/Graphics.hpp>
+#include <SFML\Graphics.hpp>
 #include <iostream>
 #include <ctime>
 #include <cstdlib>
@@ -119,7 +119,6 @@ Pomoc::Pomoc()
 }
 int main()
 {
-	git add <co to za gra.txt>;
 	Pomoc pomoc;
 	int menu_selected_flag = 0;
 	srand(time(NULL));
