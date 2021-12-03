@@ -28,6 +28,16 @@ private:
 	sf::RectangleShape oknopomoc;
 	sf::Texture* tekstura = new sf::Texture;
 };
+
+//class Collision
+//{
+//	Collision(sf::RectangleShape& body);
+//	~Collision();
+//
+//	bool CheckCollision(Collision& other);
+//	sf::Vector2f GetPosition() { return body.getPosition(); }
+//	sf::Vector2f GetHalfSize() { return body.getSize() / 2.0f; }
+//};
 Menu::Menu(float width, float height)
 {
 	if (!font.loadFromFile("arial.ttf"))
@@ -47,7 +57,7 @@ Menu::Menu(float width, float height)
 	menu[2].setString("Wyjscie");
 	menu[2].setPosition(sf::Vector2f(width / 3, height / (MAX_LICZBA_POZIOMOW + 1) * 3));
 	menu[3].setFont(font);
-	menu[3].setFillColor(sf::Color::Cyan);
+	menu[3].setFillColor(sf::Color::White);
 	menu[3].setString("Wyniki");
 	menu[3].setPosition(sf::Vector2f(width / 3, height / (MAX_LICZBA_POZIOMOW + 1) * 4));
 }
@@ -122,7 +132,7 @@ int main()
 	Pomoc pomoc;
 	int menu_selected_flag = 0;
 	srand(time(NULL));
-	sf::RenderWindow window(sf::VideoMode(800, 600), "GRA v.01");
+	sf::RenderWindow window(sf::VideoMode(800, 1000), "GRA v.01");
 	Menu menu(window.getSize().x, window.getSize().y);
 	window.setFramerateLimit(60);
 	while (window.isOpen())
@@ -170,6 +180,19 @@ int main()
 		if (menu_selected_flag == 0)
 		{
 			menu.draw(window);
+			sf::Texture tekstura;
+			tekstura.loadFromFile("bomba.png");
+			sf::Sprite bomba(tekstura, sf::IntRect(0, 0, 80, 80));
+			while (window.isOpen()){
+				while (window.pollEvent(event)) {
+					if (event.type == sf::Event::Closed)
+						window.close();
+					window.clear();
+					window.draw(bomba);
+					window.display();
+
+			}
+			}
 		}
 		if (menu_selected_flag == 2)
 		{
@@ -179,3 +202,8 @@ int main()
 	}
 	return 0;
 }
+
+//bool Collision::CheckCollision(Collision& other)
+//{
+//	return false;
+//}
