@@ -180,6 +180,9 @@ int main()
 		if (menu_selected_flag == 0)
 		{
 			menu.draw(window);
+		}
+		if (menu_selected_flag == 1)
+		{
 			sf::Texture tekstura;
 			tekstura.loadFromFile("bomba.png");
 			sf::Sprite bomba(tekstura, sf::IntRect(0, 0, 80, 80));
@@ -190,8 +193,7 @@ int main()
 					window.clear();
 					window.draw(bomba);
 					window.display();
-
-			}
+				}
 			}
 		}
 		if (menu_selected_flag == 2)
