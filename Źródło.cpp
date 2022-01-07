@@ -20,26 +20,6 @@ public:
 	void draw(sf::RenderWindow& window);
 };
 
-class Pomoc
-{
-public:
-	Pomoc();
-	void draw(sf::RenderWindow& window);
-private:
-	sf::RectangleShape oknopomoc;
-	sf::Texture* tekstura = new sf::Texture;
-};
-
-//class Collision
-//{
-//	Collision(sf::RectangleShape& body);
-//	~Collision();
-//
-//	bool CheckCollision(Collision& other);
-//	sf::Vector2f GetPosition() { return body.getPosition(); }
-//	sf::Vector2f GetHalfSize() { return body.getSize() / 2.0f; }
-//};
-
 Menu::Menu(float width, float height)
 {
 	if (!font.loadFromFile("arial.ttf"))
@@ -62,6 +42,7 @@ Menu::Menu(float width, float height)
 	menu[3].setFillColor(sf::Color::White);
 	menu[3].setString("Wyjscie");
 	menu[3].setPosition(sf::Vector2f(width / 3, height / (MAX_LICZBA_POZIOMOW + 1) * 4));
+	
 }
 
 void Menu::draw(sf::RenderWindow& window)
@@ -100,11 +81,132 @@ void Menu::przesunD()
 		menu[selectedItem].setStyle(sf::Text::Regular);
 		selectedItem++;
 		if (selectedItem >= MAX_LICZBA_POZIOMOW)
+		{
 			selectedItem = 0;
+		}
 		menu[selectedItem].setFillColor(sf::Color::Cyan);
 		menu[selectedItem].setStyle(sf::Text::Bold);
 	}
 }
+
+class Gra
+{
+public:
+	void pollEvents();
+	void update();
+	void render();
+	Gra();
+	~Gra();
+	const bool uruchomiona() const;
+private:
+	sf::RenderWindow* window;
+	sf::Event evnt;
+	sf::VideoMode videomode;
+	void initVariables();
+	void initWindow();
+	void initZbierajka();
+	sf::RectangleShape Zbierajka;
+};
+
+const bool Gra::uruchomiona() const
+{
+	return this->window->isOpen();
+}
+
+Gra::Gra()
+{
+	this->initVariables();
+	this->initWindow();
+	this->initZbierajka();
+}
+
+Gra::~Gra()
+{
+	delete this->window;
+}
+
+void Gra::initVariables()
+{
+	this->window = nullptr;
+}
+
+void Gra::initWindow()
+{
+	this->window = new sf::RenderWindow(sf::VideoMode(800, 1000), "GRA v.01", sf::Style::Titlebar | sf::Style::Close);
+	this->window->setFramerateLimit(60);
+}
+
+void Gra::update()
+{
+	this->pollEvents();
+}
+
+void Gra::render()
+{
+	this->window->clear();
+	this->window->draw(this->Zbierajka);
+	this->window->display();
+}
+
+void Gra::pollEvents()
+{
+	while (this->window->pollEvent(this->evnt))
+	{
+		switch (this->evnt.type)
+		{
+		case sf::Event::Closed:
+			this->window->close();
+			break;
+		case sf::Event::KeyPressed:
+			if (this->evnt.key.code == sf::Keyboard::Escape)
+			{
+				this->window->close();
+				break;
+			}
+		}
+	}
+}
+
+void Gra::initZbierajka()
+{
+	this->Zbierajka.setSize(sf::Vector2f(50.f, 50.f));
+	this->Zbierajka.setFillColor(sf::Color::Red);
+	this->Zbierajka.setOutlineColor(sf::Color::Magenta);
+	this->Zbierajka.setOutlineThickness(2.f);
+}
+
+class Zbierajka
+{
+public:
+	sf::RectangleShape zbierajka;
+	void initVariables();
+	void initZbierajka();
+	void render();
+	void initWindow();
+};
+
+void Zbierajka::initZbierajka()
+{
+	this->zbierajka.setPosition(0.f, 0.f);
+	this->zbierajka.setSize(sf::Vector2f(100.f, 100.f));
+	this->zbierajka.setFillColor(sf::Color::Red);
+	this->zbierajka.setOutlineColor(sf::Color::Magenta);
+	this->zbierajka.setOutlineThickness(2.f);
+}
+
+
+
+//class Collision
+//{
+//	Collision(sf::RectangleShape& body);
+//	~Collision();
+//
+//	bool CheckCollision(Collision& other);
+//	sf::Vector2f GetPosition() { return body.getPosition(); }
+//	sf::Vector2f GetHalfSize() { return body.getSize() / 2.0f; }
+//};
+
+
 
 void myDelay(int opoznienie)
 {
@@ -121,6 +223,17 @@ void myDelay(int opoznienie)
 	}
 }
 
+class Pomoc
+{
+public:
+	Pomoc();
+	void draw(sf::RenderWindow& window);
+private:
+	sf::RectangleShape oknopomoc;
+	sf::Texture* tekstura = new sf::Texture;
+};
+
+
 void Pomoc::draw(sf::RenderWindow& window)
 {
 	window.draw(oknopomoc);
@@ -136,10 +249,11 @@ Pomoc::Pomoc()
 
 int main()
 {
+	Zbierajka zbierajka;
 	Pomoc pomoc;
 	int menu_selected_flag = 0;
 	srand(time(NULL));
-	sf::RenderWindow window(sf::VideoMode(800, 1000), "GRA v.01");
+	sf::RenderWindow window(sf::VideoMode(800, 1000), "GRA Menu");
 	Menu menu(window.getSize().x, window.getSize().y);
 	window.setFramerateLimit(60);
 	while (window.isOpen())
@@ -191,39 +305,61 @@ int main()
 			window.clear();
 			if (menu_selected_flag == 0)
 			{
+				window.clear();
 				menu.draw(window);
 			}
 			if (menu_selected_flag == 1)
 			{
-				sf::Texture tekstura;
-				tekstura.loadFromFile("bomba.png");
-				sf::Sprite bomba(tekstura, sf::IntRect(0, 0, 80, 80));
-
-				sf::Texture AutoCzerwTexture;
-				AutoCzerwTexture.loadFromFile("Sam_Czerw.jpg");
-				sf::Sprite Auto_Czerw(AutoCzerwTexture, sf::IntRect(0, 0, 80, 80));
-				Auto_Czerw.setPosition(100.0f, 800.0f);
-
-				sf::Texture AutoNiebTexture;
-				AutoNiebTexture.loadFromFile("Sam_Nieb.jpg");
-				sf::Sprite Auto_Nieb(AutoNiebTexture, sf::IntRect(0, 0, 80, 80));
-				Auto_Nieb.setPosition(620.0f, 800.0f);
-
-				while (window.isOpen())
+				Gra gra;
+				while (gra.uruchomiona())
 				{
-					while (window.pollEvent(event))
-					{
-						if (event.type == sf::Event::Closed)
-						{
-							window.close();
-						}
-						window.clear();
-						window.draw(bomba);
-						window.draw(Auto_Czerw);
-						window.draw(Auto_Nieb);
-						window.display();
-					}
+					gra.update();
+					gra.render();
 				}
+				////while (window.isOpen())
+				//{
+				//	//Gra gra; //jest ok bo nowe okno robi
+				//	//gra.render();
+				//	//gra.update();
+				//	sf::Texture tekstura;
+				//	tekstura.loadFromFile("bomba.png");
+				//	sf::Sprite bomba(tekstura, sf::IntRect(0, 0, 80, 80));
+
+				//	sf::Texture AutoCzerwTexture;
+				//	AutoCzerwTexture.loadFromFile("Sam_Czerw.jpg");
+				//	sf::Sprite Auto_Czerw(AutoCzerwTexture, sf::IntRect(0, 0, 80, 80));
+				//	Auto_Czerw.setPosition(100.0f, 800.0f);
+
+				//	sf::Texture AutoNiebTexture;
+				//	AutoNiebTexture.loadFromFile("Sam_Nieb.jpg");
+				//	sf::Sprite Auto_Nieb(AutoNiebTexture, sf::IntRect(0, 0, 80, 80));
+				//	Auto_Nieb.setPosition(620.0f, 800.0f);
+				//}
+
+		//		while (window.isOpen())
+		//		{
+		//			sf::Event evnt;
+		//			if (evnt.type == sf::Event::Closed)
+		//			{
+		//				window.close();
+		//			}
+		//			if (evnt.key.code == sf::Keyboard::Escape)
+		//			{
+		//				window.clear();
+		//				menu_selected_flag = 0;
+		//				menu.draw(window);
+		//			}
+		//			window.display();
+
+		//			while (Gra.pollEvent(event))
+		//			{
+		//				window.clear();
+		///*				window.draw(bomba);
+		//				window.draw(Auto_Czerw);
+		//				window.draw(Auto_Nieb);*/
+		//				window.display();
+		//			}
+		//		}
 			}
 			if (menu_selected_flag == 2)
 			{
@@ -231,6 +367,10 @@ int main()
 			}
 			window.display();
 			if (menu_selected_flag == 3)
+			{
+				window.close();
+			}
+			if (menu_selected_flag == 4)
 			{
 				window.close();
 			}
