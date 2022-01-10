@@ -2,6 +2,7 @@
 #include <iostream>
 #include <ctime>
 #include <cstdlib>
+#include <vector>
 
 #define MAX_LICZBA_POZIOMOW 4
 
@@ -98,14 +99,30 @@ public:
 	Gra();
 	~Gra();
 	const bool uruchomiona() const;
-private:
+	void spawnZbierajka();
+	void updateZbierajki();
+	void renderZbierajki();
+	int selectedItem = 1;
 	sf::RenderWindow* window;
+private:
 	sf::Event evnt;
 	sf::VideoMode videomode;
+	int punkty;
+	float ZbierajkaSpawnTimer;
+	float ZbierajkaSpawnTimerMax;
+	int MaxZbierajka;
 	void initVariables();
 	void initWindow();
 	void initZbierajka();
+	void initline();
+	std::vector<sf::RectangleShape> Zbierajki;
 	sf::RectangleShape Zbierajka;
+	sf::RectangleShape Line;
+	sf::RectangleShape Line1;
+	sf::RectangleShape Line2;
+	sf::RectangleShape Line3;
+	sf::RectangleShape Line4;
+	Samochod samochod;
 };
 
 const bool Gra::uruchomiona() const
@@ -118,6 +135,7 @@ Gra::Gra()
 	this->initVariables();
 	this->initWindow();
 	this->initZbierajka();
+	this->initline();
 }
 
 Gra::~Gra()
@@ -125,9 +143,53 @@ Gra::~Gra()
 	delete this->window;
 }
 
+void Gra::updateZbierajki()
+{
+	if (this->Zbierajki.size() < this->MaxZbierajka)
+	{
+		if (this->ZbierajkaSpawnTimer >= this->ZbierajkaSpawnTimerMax)
+		{
+			this->spawnZbierajka();
+			this->ZbierajkaSpawnTimer = 0.f;
+		}
+		else
+			this->ZbierajkaSpawnTimer++;
+	}
+	for (auto& e : this->Zbierajki)
+	{
+		e.move(0.f, 5.f);
+	}
+	for (auto& e : this->Zbierajki)
+	{
+		this->window->draw(e);
+	}
+}
+
+void Gra::renderZbierajki()
+{
+	for (auto& e : this->Zbierajki)
+	{
+		this->window->draw(e);
+	}
+}
+
+void Gra::spawnZbierajka()
+{
+	this->Zbierajka.setPosition(
+		static_cast<float>(rand() % static_cast<int>(this->window->getSize().x - this->Zbierajka.getSize().x)),
+		0.f
+	);
+	this->Zbierajka.setFillColor(sf::Color::Green);
+	this->Zbierajki.push_back(this->Zbierajka);
+}
+
 void Gra::initVariables()
 {
 	this->window = nullptr;
+	this->punkty = 0;
+	this->ZbierajkaSpawnTimerMax = 1000.f;
+	this->ZbierajkaSpawnTimer = this->ZbierajkaSpawnTimerMax;
+	this->MaxZbierajka = 3;
 }
 
 void Gra::initWindow()
@@ -139,12 +201,20 @@ void Gra::initWindow()
 void Gra::update()
 {
 	this->pollEvents();
+	this->updateZbierajki();
 }
 
 void Gra::render()
 {
 	this->window->clear();
+	this->window->draw(this->Line);
+	this->window->draw(this->Line1);
+	this->window->draw(this->Line2);
+	this->window->draw(this->Line3);
+	this->window->draw(this->Line4);
 	this->window->draw(this->Zbierajka);
+	this->renderZbierajki();
+	this->samochod.render(this->window);
 	this->window->display();
 }
 
@@ -156,11 +226,13 @@ void Gra::pollEvents()
 		{
 		case sf::Event::Closed:
 			this->window->close();
+			selectedItem = 0;
 			break;
 		case sf::Event::KeyPressed:
 			if (this->evnt.key.code == sf::Keyboard::Escape)
 			{
 				this->window->close();
+				selectedItem = 0;
 				break;
 			}
 		}
@@ -175,26 +247,79 @@ void Gra::initZbierajka()
 	this->Zbierajka.setOutlineThickness(2.f);
 }
 
-class Zbierajka
+void Gra::initline()
 {
-public:
-	sf::RectangleShape zbierajka;
-	void initVariables();
-	void initZbierajka();
-	void render();
-	void initWindow();
-};
-
-void Zbierajka::initZbierajka()
-{
-	this->zbierajka.setPosition(0.f, 0.f);
-	this->zbierajka.setSize(sf::Vector2f(100.f, 100.f));
-	this->zbierajka.setFillColor(sf::Color::Red);
-	this->zbierajka.setOutlineColor(sf::Color::Magenta);
-	this->zbierajka.setOutlineThickness(2.f);
+	this->Line.setSize(sf::Vector2f(10.f, 1000.f));
+	this->Line.setPosition(50.f, 0.f);
+	this->Line1.setSize(sf::Vector2f(10.f, 1000.f));
+	this->Line1.setPosition(390.f, 0.f);
+	this->Line2.setSize(sf::Vector2f(10.f, 1000.f));
+	this->Line2.setPosition(740.f, 0.f);
+	this->Line3.setSize(sf::Vector2f(1.f, 1000.f));
+	this->Line3.setPosition(215.f, 0.f);
+	this->Line4.setSize(sf::Vector2f(1.f, 1000.f));
+	this->Line4.setPosition(565.f, 0.f);
 }
 
+class Samochod
+{
+public:
+	Samochod();
+	void update();
+	void render(sf::RenderTarget* target);
+	//void przesunL(float x_in, float y_in);
+	//void przesunP(float x_in, float y_in);
+	sf::Sprite getSamochod();
+	bool czy_osiagnieto_koniec;
+private:
+	sf::Vector2f position;
+	float xVel = 1.f, Yvel = 1.f;
+	sf::Texture AutoCzerwTexture;
+	sf::Sprite Auto_Czerw;
+	void initVariables();
+	void initShape();
 
+};
+
+void Samochod::initShape()
+{
+	sf::Texture AutoCzerwTexture;
+	AutoCzerwTexture.loadFromFile("Sam_Czerw.jpg");
+	sf::Sprite Auto_Czerw(AutoCzerwTexture, sf::IntRect(0, 0, 80, 80));
+	Auto_Czerw.setPosition(100.0f, 300.0f);
+}
+
+void Samochod::initVariables()
+{
+
+}
+
+Samochod::Samochod()
+{
+	this->initVariables();
+	this->initShape();
+
+	//position.x = x_in;
+	//position.y = y_in;
+	//AutoCzerwTexture.loadFromFile("Sam_Czerw.jpg");
+	//Auto_Czerw.setTexture(AutoCzerwTexture);
+	//Auto_Czerw.setPosition(position);
+	//this->init();
+}
+
+sf::Sprite Samochod::getSamochod() {
+	return Auto_Czerw;
+}
+
+void Samochod::render(sf::RenderTarget* target)
+{
+	target->draw(this->Auto_Czerw);
+}
+
+void Samochod::update()
+{
+
+}
 
 //class Collision
 //{
@@ -249,7 +374,6 @@ Pomoc::Pomoc()
 
 int main()
 {
-	Zbierajka zbierajka;
 	Pomoc pomoc;
 	int menu_selected_flag = 0;
 	srand(time(NULL));
@@ -310,6 +434,7 @@ int main()
 			}
 			if (menu_selected_flag == 1)
 			{
+				menu_selected_flag == 0;
 				Gra gra;
 				while (gra.uruchomiona())
 				{
@@ -378,7 +503,3 @@ int main()
 	}
 	return 0;
 }
-//bool Collision::CheckCollision(Collision& other)
-//{
-//	return false;
-//}
