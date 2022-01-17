@@ -3,8 +3,12 @@
 #include <ctime>
 #include <cstdlib>
 #include <vector>
+#include "Gra.h"
+#include "Pomoc.h"
+#include<stdlib.h>
 
 #define MAX_LICZBA_POZIOMOW 4
+#define MAX_LICZBA_POZIOMOW_TRUDNOSCI 2
 
 class Menu
 {
@@ -90,248 +94,74 @@ void Menu::przesunD()
 	}
 }
 
-class Gra
+class Menu_wybor
 {
-public:
-	void pollEvents();
-	void update();
-	void render();
-	Gra();
-	~Gra();
-	const bool uruchomiona() const;
-	void spawnZbierajka();
-	void updateZbierajki();
-	void renderZbierajki();
-	int selectedItem = 1;
-	sf::RenderWindow* window;
 private:
-	sf::Event evnt;
-	sf::VideoMode videomode;
-	int punkty;
-	float ZbierajkaSpawnTimer;
-	float ZbierajkaSpawnTimerMax;
-	int MaxZbierajka;
-	void initVariables();
-	void initWindow();
-	void initZbierajka();
-	void initline();
-	std::vector<sf::RectangleShape> Zbierajki;
-	sf::RectangleShape Zbierajka;
-	sf::RectangleShape Line;
-	sf::RectangleShape Line1;
-	sf::RectangleShape Line2;
-	sf::RectangleShape Line3;
-	sf::RectangleShape Line4;
-	Samochod samochod;
+	sf::Font font;
+	sf::Text menu_wybor[MAX_LICZBA_POZIOMOW_TRUDNOSCI];
+	int selectedItem1 = 0;
+public:
+	Menu_wybor(float width, float height);
+	~Menu_wybor() {};
+	void przesunGora();
+	void przesunDol();
+	int getSelectedItem1() { return selectedItem1; }
+	void draw(sf::RenderWindow& window);
 };
 
-const bool Gra::uruchomiona() const
+Menu_wybor::Menu_wybor(float width, float height)
 {
-	return this->window->isOpen();
-}
-
-Gra::Gra()
-{
-	this->initVariables();
-	this->initWindow();
-	this->initZbierajka();
-	this->initline();
-}
-
-Gra::~Gra()
-{
-	delete this->window;
-}
-
-void Gra::updateZbierajki()
-{
-	if (this->Zbierajki.size() < this->MaxZbierajka)
+	if (!font.loadFromFile("arial.ttf"))
 	{
-		if (this->ZbierajkaSpawnTimer >= this->ZbierajkaSpawnTimerMax)
+		return;
+	}
+	menu_wybor[0].setFont(font);
+	menu_wybor[0].setFillColor(sf::Color::Cyan);
+	menu_wybor[0].setString("Easy");
+	menu_wybor[0].setPosition(sf::Vector2f(width / 3, height / (MAX_LICZBA_POZIOMOW_TRUDNOSCI + 1) * 1));
+	menu_wybor[1].setFont(font);
+	menu_wybor[1].setFillColor(sf::Color::White);
+	menu_wybor[1].setString("Udreka 13");
+	menu_wybor[1].setPosition(sf::Vector2f(width / 3, height / (MAX_LICZBA_POZIOMOW_TRUDNOSCI + 1) * 2));
+}
+
+void Menu_wybor::draw(sf::RenderWindow& window)
+{
+	for (int i = 0; i < MAX_LICZBA_POZIOMOW_TRUDNOSCI; i++)
+	{
+		window.draw(menu_wybor[i]);
+	}
+}
+
+void Menu_wybor::przesunGora()
+{
+		menu_wybor[selectedItem1].setFillColor(sf::Color::White);
+		menu_wybor[selectedItem1].setStyle(sf::Text::Regular);
+		selectedItem1--;
+		if (selectedItem1 >= MAX_LICZBA_POZIOMOW_TRUDNOSCI)
 		{
-			this->spawnZbierajka();
-			this->ZbierajkaSpawnTimer = 0.f;
+			selectedItem1 = 0;
 		}
-		else
-			this->ZbierajkaSpawnTimer++;
-	}
-	for (auto& e : this->Zbierajki)
-	{
-		e.move(0.f, 5.f);
-	}
-	for (auto& e : this->Zbierajki)
-	{
-		this->window->draw(e);
-	}
-}
-
-void Gra::renderZbierajki()
-{
-	for (auto& e : this->Zbierajki)
-	{
-		this->window->draw(e);
-	}
-}
-
-void Gra::spawnZbierajka()
-{
-	this->Zbierajka.setPosition(
-		static_cast<float>(rand() % static_cast<int>(this->window->getSize().x - this->Zbierajka.getSize().x)),
-		0.f
-	);
-	this->Zbierajka.setFillColor(sf::Color::Green);
-	this->Zbierajki.push_back(this->Zbierajka);
-}
-
-void Gra::initVariables()
-{
-	this->window = nullptr;
-	this->punkty = 0;
-	this->ZbierajkaSpawnTimerMax = 1000.f;
-	this->ZbierajkaSpawnTimer = this->ZbierajkaSpawnTimerMax;
-	this->MaxZbierajka = 3;
-}
-
-void Gra::initWindow()
-{
-	this->window = new sf::RenderWindow(sf::VideoMode(800, 1000), "GRA v.01", sf::Style::Titlebar | sf::Style::Close);
-	this->window->setFramerateLimit(60);
-}
-
-void Gra::update()
-{
-	this->pollEvents();
-	this->updateZbierajki();
-}
-
-void Gra::render()
-{
-	this->window->clear();
-	this->window->draw(this->Line);
-	this->window->draw(this->Line1);
-	this->window->draw(this->Line2);
-	this->window->draw(this->Line3);
-	this->window->draw(this->Line4);
-	this->window->draw(this->Zbierajka);
-	this->renderZbierajki();
-	this->samochod.render(this->window);
-	this->window->display();
-}
-
-void Gra::pollEvents()
-{
-	while (this->window->pollEvent(this->evnt))
-	{
-		switch (this->evnt.type)
+		if (selectedItem1 < 0)
 		{
-		case sf::Event::Closed:
-			this->window->close();
-			selectedItem = 0;
-			break;
-		case sf::Event::KeyPressed:
-			if (this->evnt.key.code == sf::Keyboard::Escape)
-			{
-				this->window->close();
-				selectedItem = 0;
-				break;
-			}
+			selectedItem1 = 1;
 		}
-	}
+		menu_wybor[selectedItem1].setFillColor(sf::Color::Cyan);
+		menu_wybor[selectedItem1].setStyle(sf::Text::Bold);
 }
 
-void Gra::initZbierajka()
+void Menu_wybor::przesunDol()
 {
-	this->Zbierajka.setSize(sf::Vector2f(50.f, 50.f));
-	this->Zbierajka.setFillColor(sf::Color::Red);
-	this->Zbierajka.setOutlineColor(sf::Color::Magenta);
-	this->Zbierajka.setOutlineThickness(2.f);
+		menu_wybor[selectedItem1].setFillColor(sf::Color::White);
+		menu_wybor[selectedItem1].setStyle(sf::Text::Regular);
+		selectedItem1++;
+		if (selectedItem1 >= MAX_LICZBA_POZIOMOW_TRUDNOSCI)
+		{
+			selectedItem1 = 0;
+		}
+		menu_wybor[selectedItem1].setFillColor(sf::Color::Cyan);
+		menu_wybor[selectedItem1].setStyle(sf::Text::Bold);
 }
-
-void Gra::initline()
-{
-	this->Line.setSize(sf::Vector2f(10.f, 1000.f));
-	this->Line.setPosition(50.f, 0.f);
-	this->Line1.setSize(sf::Vector2f(10.f, 1000.f));
-	this->Line1.setPosition(390.f, 0.f);
-	this->Line2.setSize(sf::Vector2f(10.f, 1000.f));
-	this->Line2.setPosition(740.f, 0.f);
-	this->Line3.setSize(sf::Vector2f(1.f, 1000.f));
-	this->Line3.setPosition(215.f, 0.f);
-	this->Line4.setSize(sf::Vector2f(1.f, 1000.f));
-	this->Line4.setPosition(565.f, 0.f);
-}
-
-class Samochod
-{
-public:
-	Samochod();
-	void update();
-	void render(sf::RenderTarget* target);
-	//void przesunL(float x_in, float y_in);
-	//void przesunP(float x_in, float y_in);
-	sf::Sprite getSamochod();
-	bool czy_osiagnieto_koniec;
-private:
-	sf::Vector2f position;
-	float xVel = 1.f, Yvel = 1.f;
-	sf::Texture AutoCzerwTexture;
-	sf::Sprite Auto_Czerw;
-	void initVariables();
-	void initShape();
-
-};
-
-void Samochod::initShape()
-{
-	sf::Texture AutoCzerwTexture;
-	AutoCzerwTexture.loadFromFile("Sam_Czerw.jpg");
-	sf::Sprite Auto_Czerw(AutoCzerwTexture, sf::IntRect(0, 0, 80, 80));
-	Auto_Czerw.setPosition(100.0f, 300.0f);
-}
-
-void Samochod::initVariables()
-{
-
-}
-
-Samochod::Samochod()
-{
-	this->initVariables();
-	this->initShape();
-
-	//position.x = x_in;
-	//position.y = y_in;
-	//AutoCzerwTexture.loadFromFile("Sam_Czerw.jpg");
-	//Auto_Czerw.setTexture(AutoCzerwTexture);
-	//Auto_Czerw.setPosition(position);
-	//this->init();
-}
-
-sf::Sprite Samochod::getSamochod() {
-	return Auto_Czerw;
-}
-
-void Samochod::render(sf::RenderTarget* target)
-{
-	target->draw(this->Auto_Czerw);
-}
-
-void Samochod::update()
-{
-
-}
-
-//class Collision
-//{
-//	Collision(sf::RectangleShape& body);
-//	~Collision();
-//
-//	bool CheckCollision(Collision& other);
-//	sf::Vector2f GetPosition() { return body.getPosition(); }
-//	sf::Vector2f GetHalfSize() { return body.getSize() / 2.0f; }
-//};
-
-
 
 void myDelay(int opoznienie)
 {
@@ -348,33 +178,9 @@ void myDelay(int opoznienie)
 	}
 }
 
-class Pomoc
-{
-public:
-	Pomoc();
-	void draw(sf::RenderWindow& window);
-private:
-	sf::RectangleShape oknopomoc;
-	sf::Texture* tekstura = new sf::Texture;
-};
-
-
-void Pomoc::draw(sf::RenderWindow& window)
-{
-	window.draw(oknopomoc);
-}
-
-Pomoc::Pomoc()
-{
-	oknopomoc.setPosition(0, 0);
-	oknopomoc.setSize({800,600});
-	tekstura->loadFromFile("pomoc.png");
-	oknopomoc.setTexture(tekstura);
-}
 
 int main()
 {
-	Pomoc pomoc;
 	int menu_selected_flag = 0;
 	srand(time(NULL));
 	sf::RenderWindow window(sf::VideoMode(800, 1000), "GRA Menu");
@@ -383,7 +189,7 @@ int main()
 	while (window.isOpen())
 	{
 		sf::Event event;
-		while (window.pollEvent(event))
+		while (window.pollEvent(event) && menu_selected_flag == 0)
 		{
 			if (event.type == sf::Event::Closed)
 			{
@@ -405,6 +211,7 @@ int main()
 				{
 					myDelay(150);
 					menu_selected_flag = 0;
+					window.close();
 				}
 				if (menu_selected_flag == 0)
 				{
@@ -422,11 +229,12 @@ int main()
 					}
 					if (event.key.code == sf::Keyboard::Enter && menu.getSelectedItem() == 3)
 					{
-							exit(0);
+						exit(0);
 					}
 				}
 			}
-			window.clear();
+
+		}
 			if (menu_selected_flag == 0)
 			{
 				window.clear();
@@ -434,33 +242,61 @@ int main()
 			}
 			if (menu_selected_flag == 1)
 			{
-				menu_selected_flag == 0;
-				Gra gra;
-				while (gra.uruchomiona())
+				window.clear();
+				myDelay(150);
+				Menu_wybor menu_wybor(window.getSize().x, window.getSize().y);
+				menu_wybor.draw(window);
+				while (window.pollEvent(event) && menu_selected_flag == 1)
 				{
-					gra.update();
-					gra.render();
-				}
-				////while (window.isOpen())
-				//{
-				//	//Gra gra; //jest ok bo nowe okno robi
-				//	//gra.render();
-				//	//gra.update();
-				//	sf::Texture tekstura;
-				//	tekstura.loadFromFile("bomba.png");
-				//	sf::Sprite bomba(tekstura, sf::IntRect(0, 0, 80, 80));
+					if (event.type == sf::Event::Closed)
+					{
+						window.close();
+					}
+					if (event.type == sf::Event::KeyPressed)
+					{
+						if (event.key.code == sf::Keyboard::Up)
+						{
+							myDelay(150);
+							menu_wybor.przesunGora();
+						}
+						if (event.key.code == sf::Keyboard::Down)
+						{
+							myDelay(150);
+							menu_wybor.przesunDol();
+						}
+						if (event.key.code == sf::Keyboard::Escape)
+						{
+							myDelay(150);
+							menu_selected_flag = 0;
+						}
+						if (menu_selected_flag == 1)
+						{
+							if (event.key.code == sf::Keyboard::Enter && menu_wybor.getSelectedItem1() == 0)
+							{
+								Gra gra;
+								gra.selectedItem = 0;
+								menu_selected_flag = 0;
+								while (gra.uruchomiona())
+								{
+									gra.update();
+									gra.render();
+								}
+							}
+							if (event.key.code == sf::Keyboard::Enter && menu_wybor.getSelectedItem1() == 1)
+							{
+								Gra gra;
+								gra.selectedItem = 1;
+								menu_selected_flag = 0;
+								while (gra.uruchomiona())
+								{
+									gra.update();
+									gra.render();
+								}
 
-				//	sf::Texture AutoCzerwTexture;
-				//	AutoCzerwTexture.loadFromFile("Sam_Czerw.jpg");
-				//	sf::Sprite Auto_Czerw(AutoCzerwTexture, sf::IntRect(0, 0, 80, 80));
-				//	Auto_Czerw.setPosition(100.0f, 800.0f);
-
-				//	sf::Texture AutoNiebTexture;
-				//	AutoNiebTexture.loadFromFile("Sam_Nieb.jpg");
-				//	sf::Sprite Auto_Nieb(AutoNiebTexture, sf::IntRect(0, 0, 80, 80));
-				//	Auto_Nieb.setPosition(620.0f, 800.0f);
-				//}
-
+							}
+						}
+						
+					}
 		//		while (window.isOpen())
 		//		{
 		//			sf::Event evnt;
@@ -484,11 +320,16 @@ int main()
 		//				window.draw(Auto_Nieb);*/
 		//				window.display();
 		//			}
-		//		}
+				}
 			}
 			if (menu_selected_flag == 2)
 			{
+				Pomoc pomoc;
 				pomoc.draw(window);
+				if (event.key.code == sf::Keyboard::Escape)
+				{
+					menu_selected_flag = 0;
+				}
 			}
 			window.display();
 			if (menu_selected_flag == 3)
@@ -499,7 +340,6 @@ int main()
 			{
 				window.close();
 			}
-		}
 	}
 	return 0;
 }
